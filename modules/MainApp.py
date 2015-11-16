@@ -1,15 +1,17 @@
 __author__ = 'Netwave'
 
 
-import whois
+import requests
 from pprint import pprint
 class HythonTools(object):
     def __init__(self):
         self.whoisinfo = None
 
     def whois(self, url):
-        self.whoisinfo = whois.query(domain=url)
-        pprint(self.whoisinfo)
+        request_str = "http://api.hackertarget.com/whois/?q={}".format(url)
+        response = requests.get(request_str)
+        self.whoisinfo = response.content
+        pprint(self.whoisinfo.split("\n"))
         return self.whoisinfo
 
     def nmap(self):
