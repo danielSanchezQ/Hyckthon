@@ -32,9 +32,10 @@ class HythonTools(object):
 class MainApp(object):
     def __init__(self):
         self.tools = HythonTools()
-        self.optionlst  = ["Whois query", "Nmap", "Exit"]
-        self.options    = { "Whois query":self.userwhois,
-                            "Nmap"       :self.usernmap}
+        self.optionlst  = ["Whois query", "Query ip ranges","Nmap", "Exit"]
+        self.options    = { "Whois query"       :self.userwhois,
+                            "Nmap"              :self.usernmap,
+                            "Query ip ranges"   :self.userIpsRange}
     def userwhois(self):
         url = raw_input("Input url to get info: ")
         pprint(self.tools.whois(url).split("\n"))
