@@ -4,45 +4,71 @@ __author__ = 'Netwave'
 import requests
 import nmap
 import re
+import json
 from pprint import pprint
 class HythonTools(object):
+    whois_url   = "http://api.domaintools.com/v1/domaintools.com/whois/?q={}"
+    ip_url      = "http://api.domaintools.com/v1/domaintools.com/hosting-history/?q={}"
+    ipregex     = r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
     def __init__(self):
-        self.whoisinfo = None
+        self.whoisinfo  = None
+        self.ipinfo     = None
         self.portScaner = nmap.PortScanner()
-        self.ips = None
+        self.ips        = None
+        self.nmapinfo   = None
 
     def whois(self, url):
-        request_str = "http://api.hackertarget.com/whois/?q={}".format(url)
-        response = requests.get(request_str)
-        self.whoisinfo = response.content
+        request_str     = HythonTools.whois_url.format(url)
+        iprequest_str   = HythonTools.ip_url.format(url)
+        response        = requests.get(request_str)
+        ipresponse      = requests.get(iprequest_str)
+        self.whoisinfo  = json.loads(response.content)
+        self.ipinfo     = json.loads(ipresponse.content)
         return self.whoisinfo
 
     def loadIps(self):
-        ipregex = r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
         if self.whoisinfo:
-            self.ips = re.findall(ipregex, self.whoisinfo)
+            self.ips = set(sorted(re.findall(HythonTools.ipregex, str(self.ipinfo))))
         return self.ips
 
-    def nmap(self, ip_url):
+    def servers(self):
+        return self.whoisinfo['response']['name_servers']
+
+    def nmap_ping(self, ip_url):
         self.portScaner.scan(ip_url,  arguments="--top-ports 25",sudo=False)
-        return self.portScaner
+        return self.portScaner.all_hosts()
+
+    def nmap_ports(self, host):
+        return [self.portScaner[host][prot] for prot in self.portScaner[host].all_protocols()]
 
 
 
 class MainApp(object):
     def __init__(self):
         self.tools = HythonTools()
-        self.optionlst  = ["Whois query", "Query ip ranges","Nmap", "Exit"]
+        self.optionlst  = ["Whois query", "Query ip ranges", "Get server names", "Nmap pint", "Get Ports", "Exit"]
         self.options    = { "Whois query"       :self.userwhois,
-                            "Nmap"              :self.usernmap,
+                            "Get server names"  :self.servernames,
+                            "Nmap pint"         :self.usernmap,
+                            "Get Ports"         :self.nmapports,
                             "Query ip ranges"   :self.userIpsRange}
     def userwhois(self):
         url = raw_input("Input url to get info: ")
-        pprint(self.tools.whois(url).split("\n"))
+        pprint(self.tools.whois(url))
+
+    def servernames(self):
+        pprint(self.tools.servers())
 
     def usernmap(self):
         ip = raw_input("Input ip to get info: ")
-        pprint(self.tools.nmap(ip)[ip])
+        pprint(self.tools.nmap_ping(ip))
+
+    def nmapports(self):
+        print 'Host scanned:'
+        for i, h in enumerate(self.tools.portScaner.all_hosts()):
+            print i, h
+        ip = raw_input("Input index to show port info: ")
+        pprint(self.tools.nmap_ports(self.tools.portScaner.all_hosts()[int(ip)]))
 
     def userIpsRange(self):
         pprint(self.tools.loadIps())
