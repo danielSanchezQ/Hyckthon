@@ -46,10 +46,10 @@ class HythonTools(object):
 class MainApp(object):
     def __init__(self):
         self.tools = HythonTools()
-        self.optionlst  = ["Whois query", "Query ip ranges", "Get server names", "Nmap pint", "Get Ports", "Exit"]
+        self.optionlst  = ["Whois query", "Query ip ranges", "Get server names", "Nmap ping", "Get Ports", "Exit"]
         self.options    = { "Whois query"       :self.userwhois,
                             "Get server names"  :self.servernames,
-                            "Nmap pint"         :self.usernmap,
+                            "Nmap ping"         :self.usernmap,
                             "Get Ports"         :self.nmapports,
                             "Query ip ranges"   :self.userIpsRange}
     def userwhois(self):
