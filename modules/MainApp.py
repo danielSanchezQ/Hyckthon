@@ -5,11 +5,14 @@ import requests
 import nmap
 import re
 import json
+import socket
+import ipwhois
 from pprint import pprint
 class HythonTools(object):
     whois_url   = "http://api.domaintools.com/v1/domaintools.com/whois/?q={}"
     ip_url      = "http://api.domaintools.com/v1/domaintools.com/hosting-history/?q={}"
     ipregex     = r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
+
     def __init__(self):
         self.whoisinfo  = None
         self.ipinfo     = None
@@ -19,17 +22,18 @@ class HythonTools(object):
 
     def whois(self, url):
         request_str     = HythonTools.whois_url.format(url)
-        iprequest_str   = HythonTools.ip_url.format(url)
         response        = requests.get(request_str)
-        ipresponse      = requests.get(iprequest_str)
         self.whoisinfo  = json.loads(response.content)
-        self.ipinfo     = json.loads(ipresponse.content)
+        self.ips        = ipwhois.IPWhois(socket.gethostbyname(url)).lookup()
+        iprequest_str   = HythonTools.ip_url.format(self.ips)
+        ipresponse      = requests.get(iprequest_str)
+        self.whoisinfo['response'].update(json.loads(ipresponse.content))
         return self.whoisinfo
 
     def loadIps(self):
-        if self.whoisinfo:
-            self.ips = set(sorted(re.findall(HythonTools.ipregex, str(self.ipinfo))))
-        return self.ips
+        #if self.whoisinfo:
+        #    self.ips = set(sorted(re.findall(HythonTools.ipregex, str(self.ipinfo))))
+        return self.ips["asn_cidr"]
 
     def servers(self):
         return self.whoisinfo['response']['name_servers']
