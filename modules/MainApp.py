@@ -3,7 +3,6 @@ __author__ = 'Netwave'
 
 import requests
 import nmap
-import re
 import json
 import socket
 import ipwhois
@@ -11,7 +10,7 @@ from pprint import pprint
 class HythonTools(object):
     whois_url   = "http://api.domaintools.com/v1/domaintools.com/whois/?q={}"
     ip_url      = "http://api.domaintools.com/v1/domaintools.com/hosting-history/?q={}"
-    ipregex     = r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
+    #ipregex     = r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
 
     def __init__(self):
         self.whoisinfo  = None
